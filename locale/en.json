@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Obsidian Board",
+    "description": "Chat with your local Obsidian vault as a RAG knowledge base — a dedicated panel page in DSH with local retrieval and citations."
+  }
+}

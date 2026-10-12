@@ -1,0 +1,66 @@
+{
+  "name": "dsh-obsidian-board",
+  "version": "0.1.0",
+  "description": "Obsidian vault as a local RAG chat panel inside DeepSeek Harness Web — a dedicated Obsidian conversation page with local BM25 retrieval and citations.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./typert": "./lib/typert.js",
+    "./client": "./lib/client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "locale",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-typert-protocol": ">=0.1.5-rc.1"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-api-remotes"
+      ]
+    }
+  },
+  "keywords": [
+    "deepseek-harness",
+    "deepseek-harness-plugin",
+    "dsh",
+    "dsh-plugin",
+    "dsh-plugins",
+    "cordis-plugin",
+    "obsidian",
+    "obsidian-md",
+    "knowledge-base",
+    "rag",
+    "retrieval-augmented-generation",
+    "bm25",
+    "local-first",
+    "notes",
+    "second-brain"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2026heshao/dsh-obsidian-board.git"
+  },
+  "homepage": "https://github.com/2026heshao/dsh-obsidian-board#readme",
+  "bugs": {
+    "url": "https://github.com/2026heshao/dsh-obsidian-board/issues"
+  },
+  "license": "MIT"
+}

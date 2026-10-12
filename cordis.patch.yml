@@ -1,0 +1,14 @@
+- insert:
+    - id: dsh-obsidian-board
+      name: dsh-obsidian-board
+      config:
+        # Obsidian vault 根目录（绝对路径；支持 ~ 开头）。留空时面板里也能填。
+        vaultPath: ""
+        # DSH llm provider 路由名与模型 id；留空用宿主默认路由。
+        provider: ""
+        model: ""
+        # 检索与上下文
+        topK: 8
+        chunkLimit: 1200
+        # 自定义系统提示词（留空用内置 RAG 提示词）
+        systemPrompt: ""
