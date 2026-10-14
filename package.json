@@ -1,7 +1,7 @@
 {
   "name": "dsh-obsidian-board",
-  "version": "0.1.0",
-  "description": "Obsidian vault as a local RAG chat panel inside DeepSeek Harness Web — a dedicated Obsidian conversation page with local BM25 retrieval and citations.",
+  "version": "0.2.1",
+  "description": "Obsidian vault as a local RAG chat panel inside DeepSeek Harness (desktop app and Web GUI) — dedicated Obsidian conversation page with local BM25 retrieval, citations, reliable recall of your own notes, and stop-anywhere streaming.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

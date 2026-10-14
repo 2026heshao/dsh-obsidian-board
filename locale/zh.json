@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Obsidian 知识库",
-    "description": "把本地 Obsidian vault 变成 RAG 知识库：DSH 内的专属对话页面，本地检索、带引用回答。"
+    "description": "把本地 Obsidian vault 变成 RAG 知识库：DSH 桌面端与 Web 端通用的专属对话页面，本地检索、带引用回答；自有笔记优先召回，停止随时生效。"
   }
 }
