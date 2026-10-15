@@ -1,0 +1,16 @@
+# 统一按 LF 存储与检出。
+#
+# 起因：本机 core.autocrlf=true，工作区检出为 CRLF 而仓库内存 LF，
+# 导致「工作区字节」与「仓库 blob」不一致（发布脚本曾据此上传了错误的 .gitignore）。
+# 显式声明后，工作区与仓库字节一致，任何按字节读取工作区的工具都不会再错位。
+* text=auto eol=lf
+
+# 二进制文件不参与行尾转换
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.zip  binary
