@@ -11,6 +11,7 @@ A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) plug
 - 🔍 **Local-first retrieval** — BM25 with CJK bigram tokenization, title/path boosting, Obsidian tag & alias awareness. No embedding model, no network, no data leaves your machine.
 - 🎯 **Finds what you actually wrote** — your own notes outrank collected third-party material (public skill libraries are down-weighted), long identifiers such as `github_pat_…` are matched literally, and meaningful hidden folders (e.g. `.workbuddy/`) are indexed instead of silently skipped.
 - 🛑 **Stop that actually stops** — the stop button takes effect at any stage, including the retrieval/planning phase and the model's silent period before its first token. Stopped replies are shown as a neutral "stopped" state, not a red error.
+- 🧵 **Output that never garbles or hangs** — the stream pipeline is keyed per attempt, so switching provider fallbacks can't splice two answers together or silently swallow a reply; each answer shows the model that actually produced it. Replies left mid-stream by a panel refresh are marked "interrupted" with a retry button instead of spinning forever.
 - 📖 **Clickable citations** — every `[n]` in the answer and the citation chips below it open the exact note in the right-hand source pane.
 - 🗂 **Automatic vault discovery** — reads Obsidian's own vault registry, scans common locations, offers a native directory picker, or takes a pasted path.
 - ⚡ **Incremental indexing** — mtime-based; full scan of a 10k-note vault in under a second, incremental refresh in ~50 ms.
@@ -106,6 +107,7 @@ MIT
 - 🔍 **本地优先检索**——BM25 + 中文 bigram 切词、标题/路径加权、Obsidian 标签与别名感知。不用 embedding、不联网、数据不出本机。
 - 🎯 **找得到你真正写的东西**——自有笔记优先于收集来的第三方语料（公开 skill 库降权）、`github_pat_…` 这类长标识符按字面精确匹配、有意义的隐藏目录（如 `.workbuddy/`）也会纳入索引而非被静默跳过。
 - 🛑 **停止真的能停**——停止按钮在**任何阶段**都生效，包括检索/规划阶段、以及模型吐首字前的静默期；被停止的回复显示中性「已停止」状态，而不是红色报错。
+- 🧵 **输出不再错乱、不再卡死**——流式管线按「尝试轮次」对齐增量，provider 回退切换时不会把两次回答拼在一起、也不会静默吞掉整段回答；每条回答都会标注真正产出它的模型。面板被刷新打断的半截回答会标记为「已中断」并给出重试按钮，而不是永远转圈。
 - 📖 **引用可点击**——回答里的 `[n]` 与底部引用 chips 都能点开右栏对应笔记原文。
 - 🗂 **自动发现仓库**——读 Obsidian 自己的仓库注册表、扫描常见位置、支持系统目录选择对话框，或直接粘贴路径。
 - ⚡ **增量索引**——按 mtime 增量刷新：万级笔记全量扫描 <1s，增量 <50ms。

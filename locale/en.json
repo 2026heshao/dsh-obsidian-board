@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Obsidian Board",
-    "description": "Chat with your local Obsidian vault as a RAG knowledge base — a dedicated panel page in DSH (desktop app and Web GUI alike) with local retrieval, citations, recall that favors your own notes, and stop-anywhere streaming."
+    "description": "Chat with your local Obsidian vault as a RAG knowledge base — a dedicated panel page in DSH (desktop app and Web GUI alike) with local retrieval, citations, recall that favors your own notes, and a hardened output pipeline that never garbles or hangs."
   }
 }

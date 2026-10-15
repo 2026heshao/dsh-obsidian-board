@@ -54,8 +54,30 @@ t("finally 仅在仍是最新一轮时回收状态", /if \(streamSeq\.current ==
 t("停止抛错也走中性终态", /patchReply\(stopRequested\.current\s*\n?\s*\?\s*\{ pending: false, stopped: true \}/.test(client));
 
 // ── 6. 客户端：停止的空回复文案 ─────────────────────────────────────
-t("已停止的空回复显示中性文案", /m\.stopped \? '（已停止）' : '（模型没有输出内容）'/.test(client));
+// 三种中性终态必须分开表述（已停止 / 已中断 / 模型无输出）——不能静默留白。
+t("已停止的空回复显示中性文案", /m\.stopped \? '（已停止）' : m\.interrupted \? '（已中断/.test(client));
+t("已中断的空回复有独立文案", /m\.interrupted \? '（已中断——面板被刷新或流被切换打断，可重试）'/.test(client));
+t("模型无输出的空回复有兜底文案", /: '（模型没有输出内容）'/.test(client));
 t("宿主侧已停止错误被识别为 stopped 而非 error", /poll\.aborted === true \|\| poll\.error === '已停止'/.test(client));
+
+// ── 6b. 停止后立即收尾（不再等宿主后台段自己收敛）──────────────────
+// 历史 bug：客户端只在 poll.done 时才停，而后台段可能正卡在上游静默期的
+// await 里永远不置 done → 气泡永久转圈。
+t("宿主 chatPoll 暴露 stopped 终态", /const stopped = state\.stopping === true \|\| state\.controller\.signal\.aborted;/.test(host));
+t("宿主 done 把 stopped 也算作终态", /done: state\.done \|\| stopped,/.test(host));
+t("宿主 stopping 期间 thinking 不再为真", /thinking: !state\.text\.length && !!state\.think\.length && !state\.done && !stopped,/.test(host));
+t("客户端消费 poll.stopped 并立即收尾", /if \(poll\.stopped\) \{\s*\n\s*patchReply\(\{ pending: false, stopped: true \}\);\s*\n\s*return;\s*\n\s*\}/.test(client));
+
+// ── 6c. 瞬时态绝不落盘（永久转圈的根因）────────────────────────────
+t("落盘前统一净化历史", /useEffect\(\(\) => \{ LS\.set\(HISTORY_KEY, sanitizeHistory\(messages\)\.slice\(-40\)\); \}, \[messages\]\);/.test(client));
+t("净化清掉 pending 与 isThinking", /const next = \{ \.\.\.m, pending: false, isThinking: false \};/.test(client));
+t("挂载时净化已存在的存储", /useState\(\(\) => sanitizeHistory\(LS\.get\(HISTORY_KEY, \[\]\)\)\)/.test(client));
+t("无正文的 assistant 标记为已中断", /if \(m\.role === 'assistant' && !String\(m\.content \|\| ''\)\.trim\(\) && !m\.error\) next\.interrupted = true;/.test(client));
+
+// ── 6d. 终态可重试 ─────────────────────────────────────────────────
+t("中断/停止的消息给重试入口", /\(m\.interrupted \|\| m\.stopped\) && i === messages\.length - 1/.test(client));
+t("无正文的终态气泡也有重试行（不留死胡同）", /\(m\.interrupted \|\| m\.stopped\) && m\.role === 'assistant' && !String\(m\.content \|\| ''\)\.trim\(\) && i === messages\.length - 1/.test(client));
+t("动作条显示已中断标记", /m\.interrupted \? h\('span', \{ className: 'ob-usage' \}, '（已中断）'\)/.test(client));
 
 // ── 7. 行为模拟：参数校验（与 client.js 同构）──────────────────────
 const pickQuestion = (overrideQuestion, draft) => String(typeof overrideQuestion === 'string' ? overrideQuestion : draft).trim();
