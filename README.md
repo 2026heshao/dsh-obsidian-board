@@ -15,6 +15,10 @@ A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) plug
 - 🛑 **Stop that actually stops** — the stop button takes effect at any stage, including the retrieval/planning phase and the model's silent period before its first token. Stopped replies are shown as a neutral "stopped" state, not a red error.
 - 🧵 **Output that never garbles or hangs** — the stream pipeline is keyed per attempt, so switching provider fallbacks can't splice two answers together or silently swallow a reply; each answer shows the model that actually produced it. Replies left mid-stream by a panel refresh are marked "interrupted" with a retry button instead of spinning forever.
 - 📖 **Clickable citations** — every `[n]` in the answer and the citation chips below it open the exact note in the right-hand source pane.
+- 📊 **Rich Markdown answers** — tables, headings, links, italics and task lists render in answers and the source pane, sandboxed (no executable links).
+- 📡 **Live vault sync** — optional file watching rebuilds the index automatically as notes change.
+- 📃 **Long vaults stay usable** — the note list paginates on scroll, and each answer shows its phase (retrieval → planning → generation).
+- 🧭 **Guided setup** — an invalid vault path is caught at configure time with a clear validity hint, and answer timeouts are configurable.
 - 🗂 **Automatic vault discovery** — reads Obsidian's own vault registry, scans common locations, offers a native directory picker, or takes a pasted path.
 - ⚡ **Incremental indexing** — mtime-based; full scan of a 10k-note vault in under a second, incremental refresh in ~50 ms.
 - 🧩 **Native panel experience** — registered under the sidebar "Panels" group (alongside the plugin manager and timer); the panel keeps its own chat history in the browser, separate from DSH session logs.
@@ -81,14 +85,15 @@ dsh-obsidian-board/
 └── locale/*.json, icon.svg
 ```
 
-The panel chat **does not write to DSH session logs**: history lives in browser localStorage and the host half is stateless (clearing after restart is expected). Model calls go through the host `ctx.llm`, so quotas, retries, and provider routing behave exactly like your main DSH sessions.
+The panel chat **does not write to DSH session logs**: history is namespaced per vault in the panel and synced to the host via historyGet/historySet, so it survives panel reloads (localStorage as the local fallback). The host-side history is in-memory and cleared on service restart. Model calls go through the host `ctx.llm`, so quotas, retries, and provider routing behave exactly like your main DSH sessions.
 
 ## Known limits
 
 - Retrieval is BM25 + CJK bigram + title/tag weighting — not semantic embedding search. Proper nouns, keywords, and tags work best; long paraphrased questions may miss recall (a local embedding model is planned as a follow-up; the interface is already reserved). Long identifiers (PATs, hashes, file names) are matched literally to compensate.
 - Collected third-party material (paths like `_公网收集`, `vendor`, `node_modules`) is down-weighted so your own notes win — it is still retrievable, just ranked below your own writing.
 - Hidden folders are indexed only when they are meaningful (`.workbuddy` is allow-listed); structural/caching folders (`.obsidian`, `.trash`, `.git`) are always skipped.
-- Panel history lives in localStorage — clearing browser data clears it.
+- The plugin's full configuration surface is defined by `Config` in `lib/index.js` (covering all fields incl. planner, timeout, scan/watch tuning) — the `cordis.patch.yml` snippet in this README is only an install template (6 keys); the in-panel configure card can edit every field.
+- Panel history is namespaced per vault and synced to the host via historyGet/historySet; it survives panel reloads and supports JSON export/import. Host-side history is in-memory (cleared on service restart), with localStorage as the local fallback.
 - The panel chat intentionally doesn't support DSH main-session tool calls / subagents (knowledge-base Q&A doesn't need them).
 
 ## License
@@ -113,6 +118,10 @@ MIT
 - 🛑 **停止真的能停**——停止按钮在**任何阶段**都生效，包括检索/规划阶段、以及模型吐首字前的静默期；被停止的回复显示中性「已停止」状态，而不是红色报错。
 - 🧵 **输出不再错乱、不再卡死**——流式管线按「尝试轮次」对齐增量，provider 回退切换时不会把两次回答拼在一起、也不会静默吞掉整段回答；每条回答都会标注真正产出它的模型。面板被刷新打断的半截回答会标记为「已中断」并给出重试按钮，而不是永远转圈。
 - 📖 **引用可点击**——回答里的 `[n]` 与底部引用 chips 都能点开右栏对应笔记原文。
+- 📊 **Markdown 富渲染**——回答与原文栏支持表格、标题、链接、斜体、任务列表，沙箱化渲染（无可执行链接）。
+- 📡 **vault 变更自动同步**——可选文件监听，笔记变动后自动重建增量索引。
+- 📃 **长列表依然顺手**——笔记列表滚动触底分页，回答过程可见阶段（检索 → 规划 → 生成）。
+- 🧭 **配置有引导**——vault 路径无效会在配置时报错并给出有效性提示，回答超时可配置。
 - 🗂 **自动发现仓库**——读 Obsidian 自己的仓库注册表、扫描常见位置、支持系统目录选择对话框，或直接粘贴路径。
 - ⚡ **增量索引**——按 mtime 增量刷新：万级笔记全量扫描 <1s，增量 <50ms。
 - 🧩 **原生面板体验**——注册在侧栏「全局面板」组（与插件管理、定时任务同组）；面板对话历史独立存于浏览器，与 DSH 会话日志互不干扰。
@@ -181,14 +190,15 @@ dsh-obsidian-board/
 
 ### 与 DSH 主会话的关系
 
-面板对话**不写入 DSH session log**：历史存浏览器 localStorage，宿主半无状态（重启后面板历史清空是预期）。模型调用走宿主 `ctx.llm`，所以配额、重试、provider 路由与 DSH 主会话完全一致。
+面板对话**不写入 DSH session log**：面板历史按仓库隔离并与宿主端 historyGet/historySet 同步（localStorage 兜底），面板重载后仍在；宿主端历史为内存态，服务重启即清。模型调用走宿主 `ctx.llm`，所以配额、重试、provider 路由与 DSH 主会话完全一致。
 
 ## 已知边界
 
 - 检索引擎是 BM25 + 中文 bigram + 标题/标签加权，不是 embedding 语义检索——专有名词、关键词、标签检索效果最好，长句意译可能漏召回（二期可挂本地 embedding 模型，接口已留好）。PAT / 哈希 / 文件名这类长标识符已按字面精确匹配补偿。
 - 收集来的第三方语料（`_公网收集`、`vendor`、`node_modules` 等路径）会**降权**，让你的自有笔记排在前面——不是剔除，真要查这些资料仍可召回，只是排序靠后。
 - 隐藏目录只在「有意义」时才纳入索引（`.workbuddy` 已在白名单）；`.obsidian`、`.trash`、`.git` 这类结构/缓存目录始终跳过。
-- 面板历史存 localStorage，清浏览器数据会丢
+- 插件的完整配置面以 `lib/index.js` 的 `Config` 为准（含 planner、超时、扫描/监听调优等全部字段）——本 README 里 `cordis.patch.yml` 片段只是接入模板（仅 6 键）；面板内配置卡可编辑全部字段。
+- 面板历史按仓库隔离（history:<vaultHash> 键），支持导出/导入 JSON，并与宿主端 historyGet/historySet 同步；宿主端为内存态（服务重启即清），本地 localStorage 兜底。
 - 面板会话不支持 DSH 主会话的工具调用/子代理（这是设计取舍：知识库问答不需要）
 
 ## License

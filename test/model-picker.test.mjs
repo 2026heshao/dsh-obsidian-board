@@ -40,7 +40,7 @@ t("effort=null 不发字段（宿主走 resolveEffort 规则）", /const effortP
 t("下拉行渲染免费/费率/上下文/档位富信息", /ob-chip-free/.test(client) && client.includes("K ctx") && client.includes("credits"));
 t("档位 chips 在模型声明档位时出现", /selModel && selEfforts\.length/.test(client));
 t("chips 含 auto（跟随上游默认）选项", /'auto'/.test(client));
-t("选择按钮显示 模型 · 档位（与主对话页同构）", client.includes("defaultEffort || '默认'"));
+t("选择按钮显示 模型 · 档位（与主对话页同构）", /selRow\.defaultEffort \|\| t\('effortDefault'\)/.test(client)); // OPT-3.7 字面已收编为 t('effortDefault')，zh 值仍为「默认」
 t("消息动作条显示本次生效档位", /m\.model \+ \(m\.effort \? '·' \+ m\.effort : ''\)/.test(client));
 t("chips CSS 存在", client.includes(".ob-chip-btn") && client.includes(".ob-chip-free"));
 // 选择器入口位置：必须贴输入框（composer 元信息行）——主对话页同位

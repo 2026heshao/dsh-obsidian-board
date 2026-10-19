@@ -69,14 +69,14 @@ t("宿主 stopping 期间 thinking 不再为真", /thinking: !state\.text\.lengt
 t("客户端消费 poll.stopped 并立即收尾", /if \(poll\.stopped\) \{\s*\n\s*patchReply\(\{ pending: false, stopped: true \}\);\s*\n\s*return;\s*\n\s*\}/.test(client));
 
 // ── 6c. 瞬时态绝不落盘（永久转圈的根因）────────────────────────────
-t("落盘前统一净化历史", /useEffect\(\(\) => \{ LS\.set\(HISTORY_KEY, sanitizeHistory\(messages\)\.slice\(-40\)\); \}, \[messages\]\);/.test(client));
-t("净化清掉 pending 与 isThinking", /const next = \{ \.\.\.m, pending: false, isThinking: false \};/.test(client));
+t("落盘前统一净化历史（OPT-4.1 写入 history:<vaultHash> 命名空间键）", /if \(!vaultHashRef\.current\) return;/.test(client) && /LS\.set\('history:' \+ vaultHashRef\.current, sanitizeHistory\(messages\)\.slice\(-40\)\);/.test(client));
+t("净化清掉 pending 与 isThinking（OPT-4.3 改为 let next 复用赋值，行为等价）", /next = \{ \.\.\.m, pending: false, isThinking: false \};/.test(client));
 t("挂载时净化已存在的存储", /useState\(\(\) => sanitizeHistory\(LS\.get\(HISTORY_KEY, \[\]\)\)\)/.test(client));
 t("无正文的 assistant 标记为已中断", /if \(m\.role === 'assistant' && !String\(m\.content \|\| ''\)\.trim\(\) && !m\.error\) next\.interrupted = true;/.test(client));
 
 // ── 6d. 终态可重试 ─────────────────────────────────────────────────
-t("中断/停止的消息给重试入口", /\(m\.interrupted \|\| m\.stopped\) && i === messages\.length - 1/.test(client));
-t("无正文的终态气泡也有重试行（不留死胡同）", /\(m\.interrupted \|\| m\.stopped\) && m\.role === 'assistant' && !String\(m\.content \|\| ''\)\.trim\(\) && i === messages\.length - 1/.test(client));
+t("中断/停止的消息给重试入口（OPT-4.3 后 isLast prop 承载末位语义）", /\(m\.interrupted \|\| m\.stopped\) && isLast/.test(client));
+t("无正文的终态气泡也有重试行（不留死胡同）", /\(m\.interrupted \|\| m\.stopped\) && m\.role === 'assistant' && !String\(m\.content \|\| ''\)\.trim\(\) && isLast/.test(client));
 t("动作条显示已中断标记", /m\.interrupted \? h\('span', \{ className: 'ob-usage' \}, '（已中断）'\)/.test(client));
 
 // ── 7. 行为模拟：参数校验（与 client.js 同构）──────────────────────

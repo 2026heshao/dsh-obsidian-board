@@ -23,7 +23,10 @@ t("Config 声明 reasoningEffort 且默认 high", /reasoningEffort:\s*\{[\s\S]*?
 t("面板问答带 reasoningEffort 发起流", host.includes("withEffort"));
 t("空转回退分支也带 withEffort", /runOne\(withEffort\(/.test(host));
 t("回退时清空 think 防脏数据", host.includes('state.think = ""'));
-t("规划跳锁 low 档（廉价预调用不深思）", /planEffort === "high" \? "low" : planEffort/.test(host));
+t("规划跳降档走 PLAN_EFFORT_MAP（high→medium，不再砍到 low）", /options\.reasoningEffort = PLAN_EFFORT_MAP\[planEffort\] \|\| planEffort;/.test(host));
+const planMapCode = host.match(/const PLAN_EFFORT_MAP = \{[^}]*\};/);
+const PLAN_MAP = planMapCode ? new Function(planMapCode[0] + "\nreturn PLAN_EFFORT_MAP;")() : {};
+t("PLAN_EFFORT_MAP 行为：high 输入映射出 medium（廉价预调用不深思）", PLAN_MAP.high === "medium" && PLAN_MAP.low === "low" && PLAN_MAP.medium === "medium" && PLAN_MAP.xhigh === "high" && PLAN_MAP.max === "high");
 
 // ── 3. 客户端半：消费 thinkDelta + 思考可视化 ──────────────────────
 t("轮询上报 receivedThink 游标", client.includes("receivedThink"));

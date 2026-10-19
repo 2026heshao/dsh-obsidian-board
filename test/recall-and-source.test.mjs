@@ -31,7 +31,7 @@ t("randomUUID 从 node:crypto 导入", /import \{ randomUUID \} from "node:crypt
 t("两处 buildMessages 调用都传 route", (host.match(/buildMessages\(\{[\s\S]{0,200}?route[,\s}]/g) || []).length >= 2);
 
 // ── 2. provider+model 成对（事故 2）────────────────────────────────
-t("回退链有 pushPair 成对守卫（拒空 model）", (host.match(/const pushPair = \(provider, model\)/g) || []).length >= 2);
+t("回退链有 pushPair 成对守卫（拒空 model）", (host.match(/const pushPair = \(provider, model\)/g) || []).length >= 1); // OPT-2.6 非流式 chat 已下线，仅存流式回退链一处
 t("pushPair 拒绝空 model（不成对不发）", /if \(!p \|\| !m\) return;/.test(host));
 t("回退链逐个 provider 调 listModels(provider)", /llm\.listModels\(route\)/.test(host));
 t("不再存在无参 listModels() 调用", !/llm\.listModels\(\)/.test(host));
