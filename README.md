@@ -6,6 +6,8 @@ A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) plug
 
 > **Not an MCP integration, not an Obsidian plugin** — this is a dual-half DSH plugin (host + browser client). The UI is injected into the DSH main window as a `main` slot page (same mechanism as switching conversations); model calls reuse the host `ctx.llm`; the knowledge base points at your local vault directory (Obsidian doesn't even need to be running).
 
+> **Compatibility**: fully tested on DeepSeek Harness 44.7.0 (host ships `@deepseek-ai/dsh-typert-protocol@0.2.1-rc.2` / cordis 4.0.5); the declared peer range `>=0.1.5-rc.1` still covers it — no code changes needed in v0.2.3.
+
 ## Features
 
 - 🔍 **Local-first retrieval** — BM25 with CJK bigram tokenization, title/path boosting, Obsidian tag & alias awareness. No embedding model, no network, no data leaves your machine.
@@ -101,6 +103,8 @@ MIT
 把本地 **Obsidian vault** 变成 DeepSeek Harness 里的**专属知识库对话页面**（桌面端与 Web 端通用）：侧栏多一个「Obsidian」入口，点开就是一个完整面板——左侧笔记浏览器、中间 RAG 聊天、右侧引用原文。检索（BM25 + 中文 bigram）与索引全部本地完成，回答走 DSH 已配置的模型通道。
 
 > **不是 MCP 接入，也不是 Obsidian 插件**——这是一个 DSH 客户端+宿主双半插件：UI 注入进 DSH 主窗口（`main` slot 页面，与切换对话同构），模型调用复用宿主 `ctx.llm`，知识库指向你本地的 vault 目录（无需 Obsidian 运行）。
+
+> **兼容性**：已在 DeepSeek Harness 44.7.0（宿主内置 `@deepseek-ai/dsh-typert-protocol@0.2.1-rc.2` / cordis 4.0.5）上全量测试通过；声明的 peer 范围 `>=0.1.5-rc.1` 继续覆盖，本版本无需代码改动。
 
 ## 特性
 
