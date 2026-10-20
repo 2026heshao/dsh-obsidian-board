@@ -1,5 +1,14 @@
 # dsh-obsidian-board 发布报告
 
+## v0.2.4 — 导出体验修复与预览面板可拖宽
+
+本轮主题：**交互体验两连修**——修复「导出对话 .md」静默落盘的困惑（改为浏览器真实下载），为右侧笔记预览面板增加可拖动缩放分割线；README 同步补写两项能力介绍。全量测试 38 套件 0 fail。
+
+### 修复与功能
+
+- 导出对话 .md 改为浏览器真实下载：Blob + `<a download>` 触发下载（保存位置由浏览器/用户决定），无 DOM 环境降级为剪贴板复制全文；新增 `exportCopied` 文案键（中英）；单条「保存为笔记」仍走 vault 不受影响（`lib/client.js` exportChat）。
+- 右侧笔记预览面板分割线可拖动缩放：复用左栏同款交互——pointer 拖拽（setPointerCapture + 锁 body 光标）、键盘 ←/→ 步进 16px / Shift 48px、Home 复位、双击还原；宽度持久化 `dsh-obsidian-board/refPaneWidth`（[280,720] 默认 380，向左拖=变宽），手柄带 role=separator + aria 值域（`lib/client.js`）。
+
 ## v0.2.3 — 知识库质量与工程化全量升级
 
 本轮主题：**知识库质量与工程化全量升级**——检索与索引、RAG 管线、客户端 UI、契约与工程化四条车道共 40+ 项优化全部落地并逐项验证，全量测试 38 套件 0 fail。

@@ -22,6 +22,8 @@ A [DeepSeek Harness (DSH)](https://github.com/deepseek-ai/deepseek-harness) plug
 - 🗂 **Automatic vault discovery** — reads Obsidian's own vault registry, scans common locations, offers a native directory picker, or takes a pasted path.
 - ⚡ **Incremental indexing** — mtime-based; full scan of a 10k-note vault in under a second, incremental refresh in ~50 ms.
 - 🧩 **Native panel experience** — registered under the sidebar "Panels" group (alongside the plugin manager and timer); the panel keeps its own chat history in the browser, separate from DSH session logs.
+- ⬇️ **Export downloads, not vault writes** — "Export chat .md" triggers a real browser download (you pick the location; non-DOM hosts fall back to copying the full text to the clipboard) instead of silently writing into the vault.
+- ↔️ **Resizable source pane** — drag the divider between the chat area and the right-hand note preview to resize it (keyboard accessible, double-click resets, width persists across reloads).
 
 ## Install
 
@@ -125,6 +127,8 @@ MIT
 - 🗂 **自动发现仓库**——读 Obsidian 自己的仓库注册表、扫描常见位置、支持系统目录选择对话框，或直接粘贴路径。
 - ⚡ **增量索引**——按 mtime 增量刷新：万级笔记全量扫描 <1s，增量 <50ms。
 - 🧩 **原生面板体验**——注册在侧栏「全局面板」组（与插件管理、定时任务同组）；面板对话历史独立存于浏览器，与 DSH 会话日志互不干扰。
+- ⬇️ **导出即下载**——「导出对话 .md」触发浏览器真实下载（保存位置由你决定；无下载 API 的宿主环境降级为复制全文到剪贴板），不再静默写入 vault。
+- ↔️ **原文栏可拖宽**——对话区与右侧笔记预览之间的分割线可拖动缩放（键盘可达、双击复位、宽度跨刷新记忆）。
 
 ## 安装
 
