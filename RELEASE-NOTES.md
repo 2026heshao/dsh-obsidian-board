@@ -1,5 +1,49 @@
 # dsh-obsidian-board 发布报告
 
+## v0.2.5 — 输入框与模型菜单对齐主对话页，监听改定向重建
+
+本轮主题：**把「问」和「等」做扎实**——客户端输入区按宿主 InputBar 重做、模型选择菜单直接移植宿主 `ModelSelect` 实现；同时收口上一批未发布的三项：召回与引用口径分离、回退过程可视化、文件监听定向重建（并把三类重建统一进互斥锁）。测试：25 个文件 / `node --test` 51 项全绿，自定义断言合计 554 条 0 fail。
+
+### 客户端输入区（`lib/client.js`）
+
+- 输入卡几何与主对话页同源：`--dsw-specific-input-major` 卡底 + `--dsw-radius-panel` 圆角 + `--dsw-elevation-soft` 阴影，输入区 14px/24px、底行 28px 控件、34px 圆形主按钮（发送↑ / 停止■ 与宿主同款图标）。
+- 发送与停止共用主按钮：`showStop = busy && !draft.trim()`（与宿主 `primaryStops = running && (empty || blocked)` 同语义，本面板无 blocked 态）。
+- 生成中 Enter 排队：队列条目快照当轮路由（provider/model/effort），列在输入卡上方、可单条移除；本轮回答结束后 60ms 自动发下一条；显式停止时清空队列并把待发文本退回输入框，不静默丢内容。
+- 停止链路加固：`busyRef` 同步镜像覆盖「chatStart 已发、setBusy 未提交」的窗口；`interrupted()` 同时覆盖显式停止与新轮取代；页面任意位置双击 Esc（500ms 内）停止；消费 `poll.stopped` 立即收尾，不再等宿主后台段自己收敛（历史 bug：气泡永久转圈）。
+- 输入法三重守卫：`nativeEvent.isComposing` / `e.isComposing` / `keyCode === 229`——选词回车只选词不发送；Shift/Ctrl/Alt/Meta+Enter 换行。
+- 输入框自动增高（36–200px）、发送后焦点回归输入框（否则下一次 Enter 会误触停止）、清空对话同时清队列。
+- 焦点环贴合形状：宿主 ui-theme 的全局 `:focus-visible` 用 `:not(:read-write)` 把可编辑元素排除在「指针输入隐藏焦点环」之外，而 textarea 自身无圆角 → 点进输入框会浮出一个和圆角卡片不贴合的直角蓝框。改为压制 composer 子树 outline（`!important` + textarea 圆角双保险），焦点态由 `.ob-composer-card:focus-within` 的描边变色 + 3px 半透明光环表达（与宿主 `wrap:focus-within` 同构）。
+- placeholder 收敛为宿主同款克制文案（`基于知识库提问…` / `Ask your knowledge base…`），快捷键说明回到按钮 tooltip，不再塞进占位文本。
+- 索引重建与生成解耦：独立 `indexing` 态，重建期间输入框不再误显示停止/排队。
+
+### 模型选择（`lib/client.js` + `lib/index.js`）
+
+- 移植宿主 `ModelSelect`（不是照画）：「模型 / 推理档位」两级面板、provider 分组 + 吸顶分组头（`observeStickyMenuGroups`）、超过 4 条自动出搜索框（`rankByName`）、↑↓ / Tab / Shift+Tab / Escape 焦点流、`MenuSurface` + `createPortal(document.body)` 向上弹出、首帧 `MEASURE_STYLE` 隐藏测量、上方留 8px 四边留 12px 的视口钳制、滚动与 resize 重新定位、外点 mousedown 关闭、`onMouseDown` preventDefault、选中态与焦点回归。
+- 行内富信息：免费 / credits / badges / 上下文窗口 / 可用档位；触发器与页头显示「模型 · 档位」。
+- 宿主半 `listModels` 新增 `providerNames`（路由 id → 显示名，只服务分组标题；`providers` 保持 id 数组，消息级 override 必须用 id）。
+- 未显式选择时触发器与页头显示宿主配置的**真实默认模型**，不再是笼统的「默认模型」；档位显示与实际下发共用 `resolveRowEffort`，与宿主半 `resolveEffort` 同序（显式值 → 宿主配置默认（模型支持时）→ 模型默认）。
+- 选择只作用于本面板：写 localStorage `dsh-obsidian-board/model`，随消息下发 provider/model/effort 覆盖，不调 `configure`、不改宿主全局默认；当前走宿主默认路由时选档位，会把默认模型与档位一起钉成消息级覆盖。
+
+### 口径与检索（上一批未发布项）
+
+- 引用与召回分离：底部 chips 按「正文是否真标了 `[n]`」分成**引用** / **相关片段**两组，判据与正文渲染 `[n]` 同源（`CITED_MARK_RE` 与 `renderInline` 的 `[n]` 组用断言锁死）；`.md` 导出同样分两节，不再把 topK 召回一律冒充引用。
+- 回退可视化：宿主 `chatPoll.fallback` 被客户端消费，走备用通道重生成的回答额外标「备用通道」，绕路可见。
+- Config 描述与 README 口径同步：`topK` / `chunkLimit` 改为「召回片段」措辞，明确「索引与 BM25 召回零网络，planner 查询改写与回答生成走 DSH 模型通道」。
+
+### 索引与监听（`lib/vault.js`）
+
+- 定向增量重建：`fs.watch` 事件能定位到具体 .md 时只重建那一篇（`_onWatchEvent` → `_watchPending` → `_scheduleWatchTargeted`），10k 库端到端约 1.5s → **0.2–0.26s**；null 文件名、解析越界、rename 歧义一律退回全量对账（`_watchNeedFull`，合并窗口 1200ms），不猜。
+- 防抖窗口 500ms → 150ms（定向重建本身约 50ms，窗口没必要更长）。
+- 竞态封堵：`ensureIndexed` 的全量 / 增量 / 定向三类重建统一进 `scanning` 互斥锁——原「已建过就走轻量增量」快捷分支不进锁，监听器与查询路径可并发跑两份 `_incremental`，交替 drop/commit + `_recomputeStats` 压实 chunks 时会互相踩索引。
+- 头注释口径修正：写清 50ms 只是单篇「构建 + 提交 + 重算统计」，端到端增量含目录扫描与逐文件 stat 约 0.9–1.0s；同时去掉指向未入库基准日志的文件引用。
+
+### 测试
+
+- 新增 `test/opt-cited-chips.test.mjs`、`test/opt-fallback-chip.test.mjs`、`test/opt-watch-targeted.test.mjs`。
+- 重写 `test/model-picker.test.mjs`、`test/opt-ime.test.mjs`、`test/stop-cycle.test.mjs`、`test/smoke-render.test.mjs` 以对齐新契约（两级菜单 / 队列 / 短按停止 / 宿主 primitives / 焦点环形状），并把纯函数与事件回调抽出来真实求值执行（`resolveEffort`、`resolveRowEffort`、`pickModelRoute`、`onComposerKeyDown`、`submit`、abort 竞速、`ObsidianPage` / `ModelPicker` 渲染树）。
+- 客户端新增对宿主浏览器模块表的依赖：`react`、`react-dom`、`@deepseek-ai/dsh-client-ui-primitives`（与姊妹插件 `dsh-forget-session` 同款用法）。
+- **未做实机回归**：本批 UI 改动需在 DSH 44.7.0 里过一遍发送、停止（含静默期与双击 Esc）、排队自动发送、模型菜单两级切换/搜索/键盘导航、IME 与窄宽布局。
+
 ## v0.2.4 — 导出体验修复与预览面板可拖宽
 
 本轮主题：**交互体验两连修**——修复「导出对话 .md」静默落盘的困惑（改为浏览器真实下载），为右侧笔记预览面板增加可拖动缩放分割线；README 同步补写两项能力介绍。全量测试 38 套件 0 fail。
